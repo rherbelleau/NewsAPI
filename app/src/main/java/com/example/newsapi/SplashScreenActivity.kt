@@ -7,6 +7,7 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.os.Handler
 import android.widget.Toast
+import androidx.core.view.isVisible
 import com.android.volley.Request
 import com.android.volley.RequestQueue
 import com.android.volley.Response
@@ -19,54 +20,101 @@ import org.json.JSONArray
 
 class SplashScreenActivity : AppCompatActivity() {
 
-
     val SOURCES_URL = "https://newsapi.org/v2/sources?apiKey=99cb64e50a1949e8bc0cbc3ed2011542&language=fr"
-    val BASE_ARTICLES_URL = "https://newsapi.org/v2/everything?apiKey=99cb64e50a1949e8bc0cbc3ed2011542&language=fr"
+    val ARTICLES_URL = "https://newsapi.org/v2/everything?apiKey=99cb64e50a1949e8bc0cbc3ed2011542&language=fr"
 
     lateinit var queue: RequestQueue
     var sources = JSONArray()
+    var articlesData = ArrayList<ArticleShape>()
+
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_splash_screen)
         queue = Volley.newRequestQueue(this)
-        uploadsource()
+        dlSources()
+
 
 
     }
 
+    private fun popup (message : String, function : Unit ) {
+        val mypopup = AlertDialog.Builder(this)
+        mypopup.setMessage(message)
+        mypopup.setPositiveButton("Réessayer") { dialog, which ->
+            function
+        }
+        mypopup.setNegativeButton(android.R.string.no, null)
+        mypopup.show()
+    }
 
-    private fun uploadsource () {
-        val jsonObjectRequest = JsonArrayRequest(
-            Request.Method.GET, SOURCES_URL, null,
+    private fun dlSources() {
+
+        val sourcesRequest = object: JsonObjectRequest(
+            Method.GET, SOURCES_URL, null,
             { response ->
-                sources = response
+                sources = response.getJSONArray("sources")
                 if (sources.length() == 0) {
-                    val mypopup = AlertDialog.Builder(this)
-                    mypopup.setMessage("Pas de source disponible")
-                    mypopup.setPositiveButton("Réessayer") { dialog, which ->
-                        uploadsource()
-                    }
-                    mypopup.setNegativeButton(android.R.string.no, null)
-                    mypopup.show()
+                    popup("Sources introuvables",dlSources())
                 } else {
                     val Intent = Intent(this, MainActivity::class.java)
                     startActivity(Intent)
                 }
             },
             { error ->
-                val mypopup = AlertDialog.Builder(this)
-                mypopup.setMessage("Impossible de récupérer les données sources")
-                mypopup.setPositiveButton("Réessayer") { dialog, which ->
-                    uploadsource()
-                }
-                mypopup.setNegativeButton(android.R.string.no, null)
-                mypopup.show()
+                popup("Echec de la connection : impossible de trouver les sources",dlSources())
+            })
+        {
+            override fun getHeaders(): MutableMap<String, String> {
+                val headers = HashMap<String, String>()
+                headers["User-Agent"] = "Mozilla/5.0"
+                return headers
             }
-        )
-        queue.add(jsonObjectRequest)
+        }
+
+        queue.add(sourcesRequest)
     }
+
+    private fun dlArticles(source: String, page: Int) {
+        val url = "$ARTICLES_URL&sources=$source&page=$page"
+        val articlesRequest = object: JsonObjectRequest(
+            Method.GET, url, null,
+            { response ->
+                if (response.getJSONArray("articles").length() == 0) {
+                    popup("Articles de $source introuvables",dlArticles(source,page))
+                } else {
+                    val JSONarticles=response.getJSONArray("articles")
+                    val newarticles = ArrayList<ArticleShape>()
+                    for (index in 0 until JSONarticles.length()) {
+                        val article = JSONarticles.getJSONObject(index)
+                        val articlePreview = ArticleShape(article)
+                        newarticles.add(articlePreview)
+                    }
+                    viewAdapter.addArticles(newArticle)
+                    for (article in newarticles) {
+                        articlesData.add(article)
+
+                    }
+
+                }
+            },
+            { error ->
+                popup("Echec de la connection : impossible de trouver les articles de $sourcesin",dlArticles(sourcesin,page))
+            })
+        {
+            override fun getHeaders(): MutableMap<String, String> {
+                val headers = HashMap<String, String>()
+                headers["User-Agent"] = "Mozilla/5.0"
+                return headers
+            }
+        }
+
+        queue.add(articlesRequest)
+    }
+
+
+
 
 }
 
