@@ -8,6 +8,7 @@ import android.os.Bundle
 import android.os.Handler
 import android.widget.Toast
 import androidx.core.view.isVisible
+import androidx.recyclerview.widget.LinearLayoutManager
 import com.android.volley.Request
 import com.android.volley.RequestQueue
 import com.android.volley.Response
@@ -20,18 +21,21 @@ import org.json.JSONArray
 
 class SplashScreenActivity : AppCompatActivity() {
 
-    val SOURCES_URL = "https://newsapi.org/v2/sources?apiKey=99cb64e50a1949e8bc0cbc3ed2011542&language=fr"
-    val ARTICLES_URL = "https://newsapi.org/v2/everything?apiKey=99cb64e50a1949e8bc0cbc3ed2011542&language=fr"
+    val SourcesLink = "https://newsapi.org/v2/sources?apiKey=99cb64e50a1949e8bc0cbc3ed2011542&language=fr"
+    val ArticlesLink = "https://newsapi.org/v2/everything?apiKey=99cb64e50a1949e8bc0cbc3ed2011542&language=fr"
 
     lateinit var queue: RequestQueue
     var sources = JSONArray()
-    var articlesData = ArrayList<ArticleShape>()
+    var currentSource = ""
+    var currentPage = 1
+    val articles = mutableListOf<ArticleShape>()
 
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_splash_screen)
+        ArticleRecyclerView.layoutManager = LinearLayoutManager(this)
         queue = Volley.newRequestQueue(this)
         dlSources()
 
@@ -52,14 +56,16 @@ class SplashScreenActivity : AppCompatActivity() {
     private fun dlSources() {
 
         val sourcesRequest = object: JsonObjectRequest(
-            Method.GET, SOURCES_URL, null,
+            Method.GET, SourcesLink, null,
             { response ->
                 sources = response.getJSONArray("sources")
                 if (sources.length() == 0) {
                     popup("Sources introuvables",dlSources())
                 } else {
-                    val Intent = Intent(this, MainActivity::class.java)
-                    startActivity(Intent)
+                    currentSource=sources.getJSONObject(0).getString("id")
+                    dlArticles(currentSource,currentPage)
+                    ArticleRecyclerView.adapter = ArticleAdapter(articles)
+
                 }
             },
             { error ->
@@ -77,7 +83,7 @@ class SplashScreenActivity : AppCompatActivity() {
     }
 
     private fun dlArticles(source: String, page: Int) {
-        val url = "$ARTICLES_URL&sources=$source&page=$page"
+        val url = "$ArticlesLink&sources=$source&page=$page"
         val articlesRequest = object: JsonObjectRequest(
             Method.GET, url, null,
             { response ->
@@ -85,22 +91,22 @@ class SplashScreenActivity : AppCompatActivity() {
                     popup("Articles de $source introuvables",dlArticles(source,page))
                 } else {
                     val JSONarticles=response.getJSONArray("articles")
-                    val newarticles = ArrayList<ArticleShape>()
+                    val newArticles = ArrayList<ArticleShape>()
                     for (index in 0 until JSONarticles.length()) {
                         val article = JSONarticles.getJSONObject(index)
-                        val articlePreview = ArticleShape(article)
-                        newarticles.add(articlePreview)
+                        val articleShaped = ArticleShape(article)
+                        newArticles.add(articleShaped)
                     }
-                    viewAdapter.addArticles(newArticle)
-                    for (article in newarticles) {
-                        articlesData.add(article)
-
-                    }
+//                    viewAdapter.addArticles(newArticle)
+//                    for (article in newarticles) {
+//                        articlesData.add(article)
+//
+//                    }
 
                 }
             },
             { error ->
-                popup("Echec de la connection : impossible de trouver les articles de $sourcesin",dlArticles(sourcesin,page))
+                popup("Echec de la connection : impossible de trouver les articles de $source",dlArticles(source,page))
             })
         {
             override fun getHeaders(): MutableMap<String, String> {

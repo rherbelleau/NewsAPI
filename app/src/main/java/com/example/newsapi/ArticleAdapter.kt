@@ -9,8 +9,8 @@ import kotlinx.android.synthetic.main.article_layout.view.*
 class ArticleAdapter(val items: Array<ArticleShape>) : RecyclerView.Adapter<ArticleAdapter.ViewHolder>() {
 
     class ViewHolder(val view: View) : RecyclerView.ViewHolder(view) {
-        fun bindAndVersion(andVersion: ArticleShape) {
-            with(andVersion) {
+        fun bindArticle(articleView: ArticleShape) {
+            with(articleView) {
                 itemView.title_layout.text = title
                 itemView.date.text = publishedAt
                 itemView.author.text = author
@@ -26,7 +26,7 @@ class ArticleAdapter(val items: Array<ArticleShape>) : RecyclerView.Adapter<Arti
     }
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-        holder.bindAndVersion(items[position])
+        holder.bindArticle(items[position])
     }
 
 
