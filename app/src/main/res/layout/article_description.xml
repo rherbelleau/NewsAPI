@@ -41,7 +41,8 @@
     <TextView
         android:id="@+id/description_description"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content" />
+        android:layout_height="wrap_content"
+        android:padding="10dp"/>
 
     <ImageView
         android:id="@+id/article_image"

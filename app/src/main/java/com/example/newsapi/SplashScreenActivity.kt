@@ -123,7 +123,7 @@ class SplashScreenActivity : AppCompatActivity(),ArticleAdapter.OnArticleListene
 
     override fun onArticleClick(position: Int) {
         val article = articles[position]
-        val Intent = Intent(this, LayoutArticle::class.java)
+        val Intent = Intent(this, DescriptionArticle::class.java)
         Intent.putExtra("date", article.publishedAt)
         Intent.putExtra("sourceName", article.sourceName)
         Intent.putExtra("title", article.title)

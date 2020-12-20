@@ -3,6 +3,7 @@ package com.example.newsapi
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.squareup.picasso.Picasso
 import kotlinx.android.synthetic.main.article_layout.view.*
@@ -11,6 +12,8 @@ class ArticleAdapter(val items: List<ArticleShape>, private val ListenerOnArticl
 
 
     class ViewHolder(private val view: View,private val oAL: OnArticleListener) : RecyclerView.ViewHolder(view) {
+
+
         fun bindArticle(articleView: ArticleShape) {
             with(articleView) {
                 view.setOnClickListener{
