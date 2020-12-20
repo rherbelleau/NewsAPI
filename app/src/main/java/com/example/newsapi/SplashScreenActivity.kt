@@ -3,9 +3,12 @@ package com.example.newsapi
 
 import android.app.AlertDialog
 import android.content.Intent
+import android.graphics.Color
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.os.Handler
+import android.widget.ImageView
+import android.widget.ProgressBar
 import android.widget.Toast
 import androidx.core.view.isVisible
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -28,7 +31,9 @@ class SplashScreenActivity : AppCompatActivity() {
     var sources = JSONArray()
     var currentSource = ""
     var currentPage = 1
-    val articles = mutableListOf<ArticleShape>()
+    var articles = mutableListOf<ArticleShape>()
+
+
 
 
 
@@ -62,10 +67,13 @@ class SplashScreenActivity : AppCompatActivity() {
                 if (sources.length() == 0) {
                     popup("Sources introuvables",dlSources())
                 } else {
+                    articles = mutableListOf<ArticleShape>()
                     currentSource=sources.getJSONObject(0).getString("id")
                     dlArticles(currentSource,currentPage)
+                    parent_layout.setBackgroundColor(Color.argb(255, 255, 255, 255))
+                    logoView.isVisible =
+                    progressBar.VISIBLE
                     ArticleRecyclerView.adapter = ArticleAdapter(articles)
-
                 }
             },
             { error ->
@@ -91,17 +99,11 @@ class SplashScreenActivity : AppCompatActivity() {
                     popup("Articles de $source introuvables",dlArticles(source,page))
                 } else {
                     val JSONarticles=response.getJSONArray("articles")
-                    val newArticles = ArrayList<ArticleShape>()
                     for (index in 0 until JSONarticles.length()) {
                         val article = JSONarticles.getJSONObject(index)
                         val articleShaped = ArticleShape(article)
-                        newArticles.add(articleShaped)
+                        articles.add(articleShaped)
                     }
-//                    viewAdapter.addArticles(newArticle)
-//                    for (article in newarticles) {
-//                        articlesData.add(article)
-//
-//                    }
 
                 }
             },

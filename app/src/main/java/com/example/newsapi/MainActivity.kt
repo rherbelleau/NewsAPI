@@ -13,8 +13,7 @@ class MainActivity : AppCompatActivity() {
 
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-        ArticleRecyclerView.layoutManager = LinearLayoutManager(this)
-        ArticleRecyclerView.adapter = ArticleAdapter(articles)
+
     }
 
 

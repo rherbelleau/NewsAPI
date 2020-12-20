@@ -6,7 +6,7 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import kotlinx.android.synthetic.main.article_layout.view.*
 
-class ArticleAdapter(val items: Array<ArticleShape>) : RecyclerView.Adapter<ArticleAdapter.ViewHolder>() {
+class ArticleAdapter(val items: List<ArticleShape>) : RecyclerView.Adapter<ArticleAdapter.ViewHolder>() {
 
     class ViewHolder(val view: View) : RecyclerView.ViewHolder(view) {
         fun bindArticle(articleView: ArticleShape) {
