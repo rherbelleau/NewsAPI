@@ -20,7 +20,8 @@
             </intent-filter>
         </activity>
         <activity android:name=".DescriptionArticle">
-
+        </activity>
+        <activity android:name=".WebActivity">
         </activity>
     </application>
 
