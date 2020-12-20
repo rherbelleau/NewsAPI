@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">NewsAPI</string>
+    <string name="lire_l_article">Lire l\'article</string>
 </resources>

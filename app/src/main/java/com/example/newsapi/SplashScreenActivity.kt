@@ -10,6 +10,7 @@ import android.os.Handler
 import android.widget.ImageView
 import android.widget.ProgressBar
 import android.widget.Toast
+import androidx.core.view.isGone
 import androidx.core.view.isVisible
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.android.volley.Request
@@ -22,7 +23,7 @@ import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.activity_splash_screen.*
 import org.json.JSONArray
 
-class SplashScreenActivity : AppCompatActivity() {
+class SplashScreenActivity : AppCompatActivity(),ArticleAdapter.OnArticleListener {
 
     val SourcesLink = "https://newsapi.org/v2/sources?apiKey=99cb64e50a1949e8bc0cbc3ed2011542&language=fr"
     val ArticlesLink = "https://newsapi.org/v2/everything?apiKey=99cb64e50a1949e8bc0cbc3ed2011542&language=fr"
@@ -32,9 +33,6 @@ class SplashScreenActivity : AppCompatActivity() {
     var currentSource = ""
     var currentPage = 1
     var articles = mutableListOf<ArticleShape>()
-
-
-
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -70,10 +68,7 @@ class SplashScreenActivity : AppCompatActivity() {
                     articles = mutableListOf<ArticleShape>()
                     currentSource=sources.getJSONObject(0).getString("id")
                     dlArticles(currentSource,currentPage)
-                    parent_layout.setBackgroundColor(Color.argb(255, 255, 255, 255))
-                    logoView.isVisible =
-                    progressBar.VISIBLE
-                    ArticleRecyclerView.adapter = ArticleAdapter(articles)
+
                 }
             },
             { error ->
@@ -91,6 +86,7 @@ class SplashScreenActivity : AppCompatActivity() {
     }
 
     private fun dlArticles(source: String, page: Int) {
+        progressBar.isVisible = true
         val url = "$ArticlesLink&sources=$source&page=$page"
         val articlesRequest = object: JsonObjectRequest(
             Method.GET, url, null,
@@ -104,6 +100,10 @@ class SplashScreenActivity : AppCompatActivity() {
                         val articleShaped = ArticleShape(article)
                         articles.add(articleShaped)
                     }
+                    parent_layout.setBackgroundColor(Color.argb(255, 255, 255, 255))
+                    logoView.isGone =true
+                    progressBar.isVisible = false
+                    ArticleRecyclerView.adapter = ArticleAdapter(articles,this)
 
                 }
             },
@@ -121,7 +121,18 @@ class SplashScreenActivity : AppCompatActivity() {
         queue.add(articlesRequest)
     }
 
-
+    override fun onArticleClick(position: Int) {
+        val article = articles[position]
+        val Intent = Intent(this, LayoutArticle::class.java)
+        Intent.putExtra("date", article.publishedAt)
+        Intent.putExtra("sourceName", article.sourceName)
+        Intent.putExtra("title", article.title)
+        Intent.putExtra("author", article.author)
+        Intent.putExtra("description", article.description)
+        Intent.putExtra("url", article.url)
+        Intent.putExtra("urlToImage", article.urlToImage)
+        startActivity(Intent)
+    }
 
 
 }
