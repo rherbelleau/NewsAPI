@@ -20,10 +20,8 @@ import org.json.JSONArray
 
 class SplashScreenActivity : AppCompatActivity(),ArticleAdapter.OnArticleListener, ArticleAdapter.OnBottomListener {
 
-    val key= "99cb64e50a1949e8bc0cbc3ed2011542"
-
-    val SourcesLink = "https://newsapi.org/v2/sources?apiKey=6149da01c90e4b5b80c78e2dccaef212&language=fr"
-    val ArticlesLink = "https://newsapi.org/v2/everything?apiKey=6149da01c90e4b5b80c78e2dccaef212&language=fr"
+    val SourcesLink = "https://newsapi.org/v2/sources?apiKey=99cb64e50a1949e8bc0cbc3ed2011542&language=fr"
+    val ArticlesLink = "https://newsapi.org/v2/everything?apiKey=99cb64e50a1949e8bc0cbc3ed2011542&language=fr"
 
 
     var sources = JSONArray()
