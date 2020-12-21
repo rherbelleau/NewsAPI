@@ -16,6 +16,7 @@ class WebActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_web)
+        progressBarWeb.isVisible = true
         queue = Volley.newRequestQueue(this)
 
         webPage.webViewClient = object : WebViewClient() {
@@ -23,7 +24,7 @@ class WebActivity : AppCompatActivity() {
                 progressBarWeb.isVisible = false
             }
         }
-
         intent.getStringExtra("url")?.let { webPage.loadUrl(it) }
+
     }
 }

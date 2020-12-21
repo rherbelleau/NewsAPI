@@ -6,20 +6,14 @@ import android.content.Intent
 import android.graphics.Color
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import android.os.Handler
-import android.widget.ImageView
-import android.widget.ProgressBar
-import android.widget.Toast
+import android.view.Menu
+import android.view.MenuItem
 import androidx.core.view.isGone
 import androidx.core.view.isVisible
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.android.volley.Request
 import com.android.volley.RequestQueue
-import com.android.volley.Response
-import com.android.volley.toolbox.JsonArrayRequest
 import com.android.volley.toolbox.JsonObjectRequest
 import com.android.volley.toolbox.Volley
-import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.activity_splash_screen.*
 import org.json.JSONArray
 
@@ -40,10 +34,31 @@ class SplashScreenActivity : AppCompatActivity(),ArticleAdapter.OnArticleListene
         setContentView(R.layout.activity_splash_screen)
         ArticleRecyclerView.layoutManager = LinearLayoutManager(this)
         queue = Volley.newRequestQueue(this)
+
         dlSources()
 
+    }
 
+    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
+        super.onCreateOptionsMenu(menu)
+        menuInflater.inflate(R.menu.menu_layout, menu)
+        return true
+    }
 
+    override fun onPrepareOptionsMenu(menu: Menu?): Boolean {
+        super.onPrepareOptionsMenu(menu)
+        for (index in 0 until sources.length()) {
+            menu?.add(0, index, index, sources.getJSONObject(index).getString("name"))
+        }
+        return true
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        super.onOptionsItemSelected(item)
+        currentSource = sources.getJSONObject(item.itemId).getString("id")
+        currentPage = 1
+        dlArticles(currentSource, currentPage)
+        return true
     }
 
     private fun popup (message : String, function : Unit ) {
@@ -94,6 +109,7 @@ class SplashScreenActivity : AppCompatActivity(),ArticleAdapter.OnArticleListene
                 if (response.getJSONArray("articles").length() == 0) {
                     popup("Articles de $source introuvables",dlArticles(source,page))
                 } else {
+                    if (page==1) {articles=mutableListOf<ArticleShape>()}
                     val JSONarticles=response.getJSONArray("articles")
                     for (index in 0 until JSONarticles.length()) {
                         val article = JSONarticles.getJSONObject(index)
@@ -133,6 +149,10 @@ class SplashScreenActivity : AppCompatActivity(),ArticleAdapter.OnArticleListene
         Intent.putExtra("urlToImage", article.urlToImage)
         startActivity(Intent)
     }
+
+
+
+
 
 
 }
