@@ -3,6 +3,7 @@ package com.example.newsapi
 
 import android.app.AlertDialog
 import android.content.Intent
+import android.content.SharedPreferences
 import android.graphics.Color
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
@@ -32,6 +33,7 @@ class SplashScreenActivity : AppCompatActivity(),ArticleAdapter.OnArticleListene
 
     lateinit var viewAdapter : ArticleAdapter
     lateinit var queue: RequestQueue
+    lateinit var preference: SharedPreferences
     lateinit var alertDialogBuilderSource: androidx.appcompat.app.AlertDialog.Builder
     lateinit var alertDialogBuilderArticle: androidx.appcompat.app.AlertDialog.Builder
 
@@ -41,10 +43,10 @@ class SplashScreenActivity : AppCompatActivity(),ArticleAdapter.OnArticleListene
         setContentView(R.layout.activity_splash_screen)
         ArticleRecyclerView.layoutManager = LinearLayoutManager(this)
         queue = Volley.newRequestQueue(this)
-
+        preference = getPreferences(MODE_PRIVATE)
         SetUpAlertDialogBuilderSource()
         SetUpAlertDialogBuilderArticle()
-        dlSources()
+        dlSources(preference.getString("sourceSaved",null))
 
     }
 
@@ -54,7 +56,7 @@ class SplashScreenActivity : AppCompatActivity(),ArticleAdapter.OnArticleListene
         }
         alertDialogBuilderSource.setTitle("Une erreur est survenue").apply {
             setPositiveButton("Réessayer") { _, _ ->
-                dlSources()
+                dlSources(preference.getString("sourceSaved",null))
                 setNegativeButton("Annuler") { _, _ ->
                     progressBar.isVisible = false
                 }
@@ -67,18 +69,14 @@ class SplashScreenActivity : AppCompatActivity(),ArticleAdapter.OnArticleListene
         alertDialog.show()
     }
 
-    private fun dlSources() {
+    private fun dlSources(sourceSaved: String?) {
         val sourcesRequest = object: JsonObjectRequest(
             Method.GET, SourcesLink, null,
             { response ->
                 sources = response.getJSONArray("sources")
-                if (sources.length() == 0) {
-                    showAlertDialogSource("Pas de source disponible")
-                } else {
-                    articles = mutableListOf<ArticleShape>()
-                    currentSource=sources.getJSONObject(1).getString("id")
-                    dlArticles(currentSource,currentPage)
-                }
+                articles = mutableListOf<ArticleShape>()
+                currentSource=sourceSaved?: sources.getJSONObject(1).getString("id")
+                dlArticles(currentSource,currentPage)
             },
             { error ->
                 showAlertDialogSource("Impossible de télécharger les sources")
@@ -120,34 +118,30 @@ class SplashScreenActivity : AppCompatActivity(),ArticleAdapter.OnArticleListene
         val articlesRequest = object: JsonObjectRequest(
             Method.GET, url, null,
             { response ->
-                if (response.getJSONArray("articles").length() == 0) {
-                    showAlertDialogArticle("Aucun article disponible")
-                } else {
-                    if (page < 6) {
-                        var premierArticle = 1
-                        if (page == 1) {
-                            articles = mutableListOf<ArticleShape>()
-                            parent_layout.setBackgroundColor(Color.argb(255, 255, 255, 255))
-                            logoView.isGone = true
-                            premierArticle=0
-                        }
-                        val JSONarticles = response.getJSONArray("articles")
-                        val newArticles = mutableListOf<ArticleShape>()
-                        for (index in premierArticle until JSONarticles.length()) {
-                            val article = JSONarticles.getJSONObject(index)
-                            val articleShaped = ArticleShape(article)
-                            articles.add(articleShaped)
-                            newArticles.add(articleShaped)
-                        }
-
-                        if (page == 1) {
-                            viewAdapter=ArticleAdapter(articles, this, this)
-                            ArticleRecyclerView.adapter = viewAdapter
-                        } else {
-                            viewAdapter.addArticles(newArticles)
-                        }
-                        progressBar.isVisible = false
+                if (page < 6) {
+                    var premierArticle = 1
+                    if (page == 1) {
+                        articles = mutableListOf<ArticleShape>()
+                        parent_layout.setBackgroundColor(Color.argb(255, 255, 255, 255))
+                        logoView.isGone = true
+                        premierArticle=0
                     }
+                    val JSONarticles = response.getJSONArray("articles")
+                    val newArticles = mutableListOf<ArticleShape>()
+                    for (index in premierArticle until JSONarticles.length()) {
+                        val article = JSONarticles.getJSONObject(index)
+                        val articleShaped = ArticleShape(article)
+                        articles.add(articleShaped)
+                        newArticles.add(articleShaped)
+                    }
+
+                    if (page == 1) {
+                        viewAdapter=ArticleAdapter(articles, this, this)
+                        ArticleRecyclerView.adapter = viewAdapter
+                    } else {
+                        viewAdapter.addArticles(newArticles)
+                    }
+                    progressBar.isVisible = false
                 }
             },
             { error ->
@@ -197,6 +191,10 @@ class SplashScreenActivity : AppCompatActivity(),ArticleAdapter.OnArticleListene
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         super.onOptionsItemSelected(item)
         currentSource = sources.getJSONObject(item.itemId).getString("id")
+        super.onPause()
+        val editor = preference.edit()
+        editor.putString("sourceSaved", currentSource)
+        editor.apply()
         currentPage = 1
         dlArticles(currentSource, currentPage)
         return true
